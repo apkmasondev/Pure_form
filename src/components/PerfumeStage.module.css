@@ -1,0 +1,36 @@
+.stageContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background-color: var(--color-bg);
+  z-index: 1;
+}
+
+.subtleProgressTrack {
+  position: absolute;
+  right: clamp(1rem, 2vw, 2.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  height: 120px;
+  width: 1px;
+  background-color: rgba(0, 0, 0, 0.08);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.subtleProgressBar {
+  width: 100%;
+  background-color: var(--color-accent-champagne);
+  transition: height 0.1s linear;
+}
+
+@media (max-width: 767px) {
+  .subtleProgressTrack {
+    right: 0.75rem;
+    height: 80px;
+  }
+}

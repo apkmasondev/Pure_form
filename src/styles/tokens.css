@@ -1,0 +1,24 @@
+:root {
+  /* Color Palette - Premium Luxury */
+  --color-bg: #ffffff;
+  --color-text-primary: #111111;
+  --color-text-muted: #666666;
+  --color-accent-champagne: #c5a059;
+  --color-accent-gold-light: #e6cb89;
+  --color-overlay-light: rgba(255, 255, 255, 0.85);
+
+  /* Typography */
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  --letter-spacing-wide: 0.35em;
+  --letter-spacing-heading: 0.25em;
+
+  /* Spacing and Protected Center Zone */
+  --safe-padding-desktop: clamp(2rem, 5vw, 6rem);
+  --safe-padding-mobile: clamp(1.25rem, 4vw, 2rem);
+
+  /* Animation Constants */
+  --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: 0.25s var(--ease-luxury);
+}

@@ -1,0 +1,371 @@
+.overlayContainer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--safe-padding-desktop);
+  box-sizing: border-box;
+}
+
+@media (max-width: 767px) {
+  .overlayContainer {
+    padding: var(--safe-padding-mobile);
+    padding-top: max(var(--safe-padding-mobile), env(safe-area-inset-top));
+    padding-bottom: max(var(--safe-padding-mobile), env(safe-area-inset-bottom));
+  }
+}
+
+.textWrapper {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  will-change: opacity, transform;
+  pointer-events: none;
+  max-width: min(600px, 85vw);
+  transform: translateY(var(--ty, 0px));
+}
+
+/* Minimalist Luxury Progress Chapter Counter (01 / 05) */
+.progressCounterWrapper {
+  position: absolute;
+  bottom: clamp(2rem, 5vh, 3.5rem);
+  left: clamp(2.5rem, 5vw, 4.5rem);
+  display: flex;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: clamp(0.7rem, 1.1vw, 0.85rem);
+  letter-spacing: 0.35em;
+  pointer-events: none;
+  z-index: 20;
+  user-select: none;
+}
+
+.counterCurrent {
+  color: var(--color-accent-champagne);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.counterDivider {
+  color: var(--color-text-muted);
+  opacity: 0.4;
+  margin: 0 0.3em;
+  font-weight: 300;
+}
+
+.counterTotal {
+  color: var(--color-text-muted);
+  font-weight: 300;
+  opacity: 0.7;
+}
+
+/* Initial Luxury Intro Header - Centered Dead Middle (Progress 0.00 -> 0.045) */
+.introHeaderWrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, calc(-50% + var(--ty, 0px)));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  will-change: opacity, transform;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.introTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 5.5vw, 4.5rem);
+  font-weight: 300;
+  letter-spacing: var(--letter-spacing-heading);
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.introSubtitle {
+  font-family: var(--font-sans);
+  font-size: clamp(0.85rem, 1.6vw, 1.3rem);
+  font-weight: 400;
+  letter-spacing: 0.5em;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  margin-top: 0.8rem;
+  white-space: nowrap;
+}
+
+.introPrompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2.2rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.45em;
+  color: var(--color-text-primary);
+  opacity: 0.9;
+  text-transform: uppercase;
+}
+
+.introLine {
+  width: 1.5px;
+  height: 38px;
+  background: linear-gradient(to bottom, var(--color-accent-champagne), transparent);
+  margin-top: 0.6rem;
+  animation: pulseLine 2s infinite ease-in-out;
+}
+
+@keyframes pulseLine {
+  0%, 100% { opacity: 0.4; transform: scaleY(0.8); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
+
+/* Final Packshot Luxury Stage Overlay (Progress 0.88 -> 1.00) */
+.finalStageContainer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  will-change: opacity, transform;
+  z-index: 15;
+  transform: translateY(var(--ty, 0px));
+}
+
+.finalLeftPyramid {
+  position: absolute;
+  top: 50%;
+  left: clamp(3rem, 6vw, 7rem);
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  pointer-events: none;
+}
+
+.pyramidHeading {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.4em;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  margin-bottom: 1.2rem;
+}
+
+.pyramidRow {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: clamp(0.7rem, 1.1vw, 0.85rem);
+  letter-spacing: 0.25em;
+  line-height: 2.2;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.noteLabel {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  width: 4.5rem;
+  display: inline-block;
+}
+
+.noteValue {
+  color: var(--color-text-primary);
+  font-weight: 400;
+}
+
+.finalRightCta {
+  position: absolute;
+  top: 50%;
+  right: clamp(3rem, 6vw, 7rem);
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  pointer-events: auto;
+}
+
+.ctaCategory {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.4em;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.ctaVolume {
+  font-family: var(--font-sans);
+  font-size: clamp(0.8rem, 1.3vw, 1.05rem);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  color: var(--color-text-primary);
+  margin-bottom: 1.8rem;
+  white-space: nowrap;
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95rem 2.4rem;
+  border: 1px solid #111111;
+  background: #111111;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  outline: none;
+}
+
+.ctaButton:hover,
+.ctaButton:focus-visible {
+  border-color: var(--color-accent-champagne);
+  background: var(--color-accent-champagne);
+  color: #ffffff;
+  box-shadow: 0 6px 25px rgba(197, 160, 89, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Mobile Position Overrides - Preserves horizontal centering (-50%) */
+@media (max-width: 767px) {
+  .progressCounterWrapper {
+    bottom: max(1.2rem, env(safe-area-inset-bottom));
+    left: max(1.5rem, env(safe-area-inset-left));
+    font-size: 0.7rem;
+  }
+
+  .finalLeftPyramid {
+    top: clamp(3.5rem, 10vh, 6rem);
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    align-items: center;
+    width: max-content;
+  }
+
+  .noteLabel {
+    width: auto;
+    margin-right: 0.6rem;
+  }
+
+  .finalRightCta {
+    top: auto;
+    bottom: clamp(3.5rem, 10vh, 6rem);
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    align-items: center;
+    width: max-content;
+  }
+}
+
+/* Position Rules Desktop */
+.pos_top_left {
+  top: clamp(3rem, 12vh, 8rem);
+  left: clamp(3rem, 8vw, 8rem);
+  text-align: left;
+}
+
+.pos_bottom_right {
+  bottom: clamp(3rem, 12vh, 8rem);
+  right: clamp(3rem, 8vw, 8rem);
+  text-align: right;
+  align-items: flex-end;
+}
+
+.pos_mid_left {
+  top: 50%;
+  left: clamp(3rem, 8vw, 8rem);
+  transform: translateY(calc(-50% + var(--ty, 0px)));
+  text-align: left;
+}
+
+.pos_top_right {
+  top: clamp(3rem, 12vh, 8rem);
+  right: clamp(3rem, 8vw, 8rem);
+  text-align: right;
+  align-items: flex-end;
+}
+
+.pos_bottom_left {
+  bottom: clamp(3rem, 12vh, 8rem);
+  left: clamp(3rem, 8vw, 8rem);
+  text-align: left;
+}
+
+@media (max-width: 767px) {
+  .pos_top_left,
+  .pos_top_right,
+  .pos_mid_left {
+    top: clamp(3.5rem, 10vh, 6rem);
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, var(--ty, 0px));
+    text-align: center;
+    align-items: center;
+  }
+
+  .pos_bottom_right,
+  .pos_bottom_left {
+    bottom: clamp(3.5rem, 10vh, 6rem);
+    left: 50%;
+    right: auto;
+    top: auto;
+    transform: translate(-50%, var(--ty, 0px));
+    text-align: center;
+    align-items: center;
+  }
+}
+
+/* Typography styles */
+.subtitle {
+  font-family: var(--font-sans);
+  font-size: clamp(0.75rem, 1.2vw, 1.1rem);
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.accentDot {
+  display: inline-block;
+  color: var(--color-accent-champagne);
+  margin-left: 0.25em;
+}
+
+.brandTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 5vw, 4.2rem);
+  font-weight: 300;
+  letter-spacing: var(--letter-spacing-heading);
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin: 0;
+  white-space: nowrap;
+}
+

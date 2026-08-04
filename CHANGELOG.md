@@ -2,6 +2,12 @@
 
 All notable changes to the **APKMASON — PURE FORM** project will be documented in this file.
 
+## [1.1.2] - 2026-08-04
+
+### Fixed & Improved
+- **Likwidacja białego paska na mobile (Android / iOS)**: Zamieniono wysokość `.stageContainer` z `100svh` na dynamiczne rozciąganie `inset: 0` oraz `height: 100dvh`. Gdy pasek adresu przeglądarki zwija się podczas scrollowania, kontener sceny automatycznie dopasowuje swoją wysokość do 100% widocznego ekranu, eliminując biały pasek na dole.
+- **Eliminacja wyścigu klatek (Frame Race Condition)**: W `useVideoFrameController.ts` dodano utrzymywanie zawsze najświeższej wartości docelowej klatki z pętli rAF w reakcji na zdarzenie `onSeeked`, uniemożliwiając wideo powrót do nieaktualnych klatek podczas gwałtownego przewijania.
+
 ## [1.1.1] - 2026-08-02
 
 ### Fixed & Cleaned (Audyt #2)

@@ -39,7 +39,7 @@ export function useVideoFrameController() {
         return;
       }
 
-      // Defer if video is currently seeking
+      // Defer and keep pendingTimeRef strictly updated to the freshest target frame if currently seeking
       if (videoEl.seeking) {
         pendingTimeRef.current = targetTime;
         return;
@@ -57,9 +57,14 @@ export function useVideoFrameController() {
   );
 
   const handleSeeked = useCallback((videoEl: HTMLVideoElement | null) => {
-    if (videoEl && pendingTimeRef.current !== null) {
-      const timeToApply = pendingTimeRef.current;
-      pendingTimeRef.current = null;
+    if (!videoEl || pendingTimeRef.current === null) return;
+
+    const timeToApply = pendingTimeRef.current;
+    pendingTimeRef.current = null;
+
+    // Check if pending target frame actually differs sufficiently from last applied time to avoid race condition jitter
+    const timeDiff = Math.abs(timeToApply - lastAppliedTimeRef.current);
+    if (timeDiff >= MIN_FRAME_DIFFERENCE / VIDEO_FPS) {
       try {
         videoEl.currentTime = timeToApply;
         lastAppliedTimeRef.current = timeToApply;

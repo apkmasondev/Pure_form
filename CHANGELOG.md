@@ -6,7 +6,7 @@ All notable changes to the **APKMASON — PURE FORM** project will be documented
 
 ### Fixed & Optimized (Mobile Replay Bug Fix)
 - **Naprawa Reaktywacji Pętli rAF po Replay (`App.tsx`)**: Wprowadzono stan `reelKey`, który przy kliknięciu przycisku `DISCOVER THE SCENT` od nowa aktywuje zatrzymaną pętlę animacji `requestAnimationFrame`. Usunięto błąd zamrażania pierwszej warstwy wideo po ponownym uruchomieniu.
-- **Reset Pozycji Wideo przy Replay (`PerfumeStage.tsx`)**: Dodano automatyczny reset `currentTime = 0` dla wszystkich warstw wideo przy starcie sekwencji od `0.0`, gwarantując natychmiastowy i płynny start filmu od pierwszej klatki.
+- **Likwidacja Błyskania Sekwencji Wstecz (`useSmoothedProgress.ts` & `PerfumeStage.tsx`)**: Zastosowano natychmiastowy reset postępu z `1.0` do `0.0` przy restarcie mobilnym, eliminując 150-milisekundowe wygładzanie wstecz, które powodowało mignięcie warstw C ➔ B ➔ A. Wszystkie wideo ulegają zsynchronizowanemu zresetowaniu do klatki 0.0.
 
 ## [1.3.1] - 2026-08-04
 

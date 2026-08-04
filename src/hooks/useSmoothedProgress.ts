@@ -45,11 +45,20 @@ export function useSmoothedProgress(
       const deltaSeconds = deltaMs / 1000;
 
       const target = targetProgressRef.current ?? 0;
-      const nextRendered = calculateSmoothedProgress(
-        renderedProgressRef.current,
-        target,
-        deltaSeconds
-      );
+      let nextRendered = 0;
+
+      // Instantly hard-reset rendered progress when target drops from end (1.0) to start (0.0)
+      // to eliminate backward sequence flashing (Layer C -> B -> A) on mobile replay
+      if (target === 0 && renderedProgressRef.current > 0.8) {
+        nextRendered = 0;
+      } else {
+        nextRendered = calculateSmoothedProgress(
+          renderedProgressRef.current,
+          target,
+          deltaSeconds
+        );
+      }
+
       renderedProgressRef.current = nextRendered;
 
       onFrameTickRef.current(nextRendered, deltaSeconds);

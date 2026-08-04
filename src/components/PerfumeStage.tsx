@@ -64,18 +64,18 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
         progressBarRef.current.style.height = `${(renderedProgress * 100).toFixed(2)}%`;
       }
 
-      // Scrub videos
+      // Scrub videos only when layer is visible or active
       const videoA = layerARef.current?.videoElement;
       const videoB = layerBRef.current?.videoElement;
       const videoC = layerCRef.current?.videoElement;
 
-      if (states.layerA.opacity > 0.001 || renderedProgress < 0.50) {
+      if (states.layerA.opacity > 0.001) {
         controllerA.updateVideoFrame(videoA ?? null, states.layerA.targetFrame, VIDEO_MANIFEST.layerA.duration);
       }
-      if (states.layerB.opacity > 0.001 || (renderedProgress >= 0.35 && renderedProgress <= 0.92)) {
+      if (states.layerB.opacity > 0.001) {
         controllerB.updateVideoFrame(videoB ?? null, states.layerB.targetFrame, VIDEO_MANIFEST.layerB.duration);
       }
-      if (states.layerC.opacity > 0.001 || renderedProgress >= 0.80) {
+      if (states.layerC.opacity > 0.001) {
         controllerC.updateVideoFrame(videoC ?? null, states.layerC.targetFrame, VIDEO_MANIFEST.layerC.duration);
       }
     },

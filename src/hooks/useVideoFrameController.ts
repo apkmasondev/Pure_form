@@ -3,7 +3,7 @@ import { clamp } from '../lib/clamp';
 import { VIDEO_FPS } from '../lib/videoManifest';
 
 export const MAX_FRAME_STEP = 2.25;
-export const MIN_FRAME_DIFFERENCE = 0.2;
+export const MIN_FRAME_DIFFERENCE = 0.35;
 
 /**
  * Calculates clamped frame stepping to avoid frame teleportation on rapid scroll.

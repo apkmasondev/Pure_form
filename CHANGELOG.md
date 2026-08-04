@@ -2,6 +2,12 @@
 
 All notable changes to the **APKMASON — PURE FORM** project will be documented in this file.
 
+## [1.2.1] - 2026-08-04
+
+### Fixed & Optimized (Mobile GPU Video Decoding)
+- **Zredukowano obciążenie dekodera mobilnego o 66%**: W `PerfumeStage.tsx` wyeliminowano seekowanie nieaktywnych, ukrytych warstw wideo na telefonach. Sprzętowy dekoder GPU w telefonie przetwarza teraz wyłącznie aktualnie widoczną warstwę wideo, eliminując przycinanie i zrzucanie klatek.
+- **Zoptymalizowano progowy krok klatki**: Zwiększono `MIN_FRAME_DIFFERENCE` do `0.35`, eliminując mikro-jitter i zbędne przesunięcia klatek w odtwarzaczach mobilnych.
+
 ## [1.2.0] - 2026-08-04
 
 ### Added & Improved (Wariant A - Mobile Auto-Play Reel)

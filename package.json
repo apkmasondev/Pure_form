@@ -1,7 +1,7 @@
 {
   "name": "apkmason-pure-form",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "homepage": "https://apkmasondev.github.io/Pure_form",
   "type": "module",
   "scripts": {

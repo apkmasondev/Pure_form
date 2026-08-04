@@ -12,7 +12,11 @@ export interface StoryCopyRef {
   updateProgress: (progress: number) => void;
 }
 
-export const StoryCopy = forwardRef<StoryCopyRef, object>((_, ref) => {
+interface StoryCopyProps {
+  onCtaClick?: () => void;
+}
+
+export const StoryCopy = forwardRef<StoryCopyRef, StoryCopyProps>(({ onCtaClick }, ref) => {
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const introHeaderRef = useRef<HTMLDivElement>(null);
   const finalStageRef = useRef<HTMLDivElement>(null);
@@ -152,8 +156,11 @@ export const StoryCopy = forwardRef<StoryCopyRef, object>((_, ref) => {
             className={styles.ctaButton}
             type="button"
             onClick={() => {
-              // Smooth scroll to top or interactive discovery feedback
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              if (onCtaClick) {
+                onCtaClick();
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
             }}
           >
             DISCOVER THE SCENT

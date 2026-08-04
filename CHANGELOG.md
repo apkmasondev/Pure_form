@@ -2,6 +2,13 @@
 
 All notable changes to the **APKMASON — PURE FORM** project will be documented in this file.
 
+## [1.3.1] - 2026-08-04
+
+### Added & Improved (Master Mobile Final Stage Hold & CTA Replay)
+- **Zatrzymanie na Finałowej Klatce (Mobile)**: Na urządzeniach mobilnych po 16-sekundowym spocie filmowym wideo zatrzymuje się na klatce finałowej (`progress = 1.0`), pozwalając użytkownikowi zapoznać się z nutami zapachowymi (Olfactory Pyramid) oraz specyfikacją flakonu.
+- **Odgrywanie Sekwencji po Kliknięciu Przycisku (Mobile CTA Replay)**: Kliknięcie/dotknięcie przycisku `DISCOVER THE SCENT` na telefonie restartuje sekwencję filmową od `0.0`, odtwarzając doznanie od początku.
+- **Płynny Scroll do Góry na Desktopie**: Na komputerach stacjonarnych przycisk `DISCOVER THE SCENT` płynnie przewija stronę na samą górę (`window.scrollTo({ top: 0, behavior: 'smooth' })`).
+
 ## [1.3.0] - 2026-08-04
 
 ### Fixed & Master Optimization (Native Mobile GPU Video & Clean UI)

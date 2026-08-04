@@ -12,11 +12,13 @@ import styles from './PerfumeStage.module.css';
 interface PerfumeStageProps {
   targetProgressRef: React.RefObject<number>;
   isMobile: boolean;
+  onCtaClick?: () => void;
 }
 
 export const PerfumeStage: React.FC<PerfumeStageProps> = ({
   targetProgressRef,
   isMobile,
+  onCtaClick,
 }) => {
   const layerARef = useRef<VideoLayerRef>(null);
   const layerBRef = useRef<VideoLayerRef>(null);
@@ -103,7 +105,7 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
         }
       }
     },
-    [controllerA, controllerB, controllerC]
+    [controllerA, controllerB, controllerC, isMobile]
   );
 
   useSmoothedProgress(targetProgressRef, handleFrameTick, true);
@@ -174,7 +176,7 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
         />
 
         {/* Story Overlay */}
-        <StoryCopy ref={storyCopyRef} />
+        <StoryCopy ref={storyCopyRef} onCtaClick={onCtaClick} />
 
         {/* Subtle Luxury Scroll Progress Indicator */}
         <div className={styles.subtleProgressTrack} aria-hidden="true">

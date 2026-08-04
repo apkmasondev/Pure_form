@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useStableViewport } from '../hooks/useStableViewport';
 import { useScrollProgress } from '../hooks/useScrollProgress';
 import { PerfumeStage } from '../components/PerfumeStage';
@@ -10,6 +10,7 @@ export const App: React.FC = () => {
   const { viewportHeight, isMobile } = useStableViewport();
   const { targetProgressRef: scrollProgressRef } = useScrollProgress(containerRef);
   const mobileProgressRef = useRef<number>(0);
+  const startTimeRef = useRef<number>(performance.now());
 
   const [shouldReduceMotion, setShouldReduceMotion] = useState<boolean>(false);
 
@@ -34,27 +35,20 @@ export const App: React.FC = () => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Mobile Auto-Play Cinematic Reel Loop (16 seconds per cycle, repeating)
+  // Mobile Auto-Play Cinematic Reel (16s duration, holds at final packshot 1.0)
   useEffect(() => {
     if (!isMobile || shouldReduceMotion) return;
 
     let rafId: number | null = null;
-    let startTime = performance.now();
-    const DURATION_MS = 16000; // 16s cinematic reel per cycle
+    startTimeRef.current = performance.now();
+    const DURATION_MS = 16000; // 16s cinematic reel
 
     const tick = (now: number) => {
-      const elapsed = now - startTime;
-      let progress = Math.min(1, Math.max(0, elapsed / DURATION_MS));
-
-      // Loop back to beginning after completing a full cycle
-      if (progress >= 1) {
-        startTime = now;
-        progress = 0;
-      }
-
+      const elapsed = now - startTimeRef.current;
+      const progress = Math.min(1, Math.max(0, elapsed / DURATION_MS));
       mobileProgressRef.current = progress;
 
-      if (!document.hidden) {
+      if (progress < 1 && !document.hidden) {
         rafId = requestAnimationFrame(tick);
       }
     };
@@ -65,6 +59,12 @@ export const App: React.FC = () => {
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
   }, [isMobile, shouldReduceMotion]);
+
+  // Mobile CTA Replay Callback: Reset reel to 0.0 and play again
+  const handleMobileReplay = useCallback(() => {
+    startTimeRef.current = performance.now();
+    mobileProgressRef.current = 0;
+  }, []);
 
   if (shouldReduceMotion) {
     const poster = isMobile ? POSTER_MANIFEST.finalMobile : POSTER_MANIFEST.finalDesktop;
@@ -86,7 +86,11 @@ export const App: React.FC = () => {
   if (isMobile) {
     return (
       <main className="mobileContainer" aria-label="APKMASON Pure Form Mobile Cinematic Experience">
-        <PerfumeStage targetProgressRef={activeProgressRef} isMobile={true} />
+        <PerfumeStage
+          targetProgressRef={activeProgressRef}
+          isMobile={true}
+          onCtaClick={handleMobileReplay}
+        />
       </main>
     );
   }

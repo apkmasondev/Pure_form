@@ -234,8 +234,8 @@
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
-  outline: 2px solid transparent;
-  outline-offset: 3px;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ctaButton:hover,
@@ -245,7 +245,7 @@
   color: #ffffff;
   box-shadow: 0 6px 25px rgba(197, 160, 89, 0.4);
   transform: translateY(-2px);
-  outline-color: var(--color-accent-champagne);
+  outline: none;
 }
 
 /* Mobile Position Overrides - Preserves horizontal centering (-50%) */

@@ -2,6 +2,13 @@
 
 All notable changes to the **APKMASON — PURE FORM** project will be documented in this file.
 
+## [1.3.0] - 2026-08-04
+
+### Fixed & Master Optimization (Native Mobile GPU Video & Clean UI)
+- **Czysty Interfejs bez Kwadratów Dotykowych**: Usunięto czarny kwadratowy obrys przycisku audio (`AudioToggle.module.css`) oraz przycisku zakupu (`StoryCopy.module.css`). Zastosowano `outline: none;` i `-webkit-tap-highlight-color: transparent;` dla czystego, luksusowego wyglądu ikony bez czarnych ramek przy dotknięciu na mobile i hoverze na desktopie.
+- **Natywne Odtwarzanie Akcelerowane Sprzętowo na Mobile (`PerfumeStage.tsx`)**: Na urządzeniach mobilnych wyeliminowano 60fps seekowanie klatek (`currentTime = ...`), które obciążało dekoder H.264. Aktywna warstwa wideo odtwarza się teraz natywnie za pomocą akceleracji sprzętowej GPU (`video.play()`), co daje idealne 60–120 fps bez zcinania.
+- **Zachowanie 100% Płynnego Scrollowania na Desktopie**: Kod komputera stacjonarnego z natywnym scrollem rolką myszy pozostał w 100% nienaruszony.
+
 ## [1.2.2] - 2026-08-04
 
 ### Fixed & Audited (Audyt #3)

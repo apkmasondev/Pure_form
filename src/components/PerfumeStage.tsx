@@ -64,19 +64,43 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
         progressBarRef.current.style.height = `${(renderedProgress * 100).toFixed(2)}%`;
       }
 
-      // Scrub videos only when layer is visible or active
+      // Odtwarzanie wideo: Na Mobile używamy natywnej akceleracji sprzętowej GPU (.play()), a na Desktopie scroll-scrubbing
       const videoA = layerARef.current?.videoElement;
       const videoB = layerBRef.current?.videoElement;
       const videoC = layerCRef.current?.videoElement;
 
-      if (states.layerA.opacity > 0.001) {
-        controllerA.updateVideoFrame(videoA ?? null, states.layerA.targetFrame, VIDEO_MANIFEST.layerA.duration);
-      }
-      if (states.layerB.opacity > 0.001) {
-        controllerB.updateVideoFrame(videoB ?? null, states.layerB.targetFrame, VIDEO_MANIFEST.layerB.duration);
-      }
-      if (states.layerC.opacity > 0.001) {
-        controllerC.updateVideoFrame(videoC ?? null, states.layerC.targetFrame, VIDEO_MANIFEST.layerC.duration);
+      if (isMobile) {
+        // Native hardware-accelerated video streaming on Mobile (0 seek lag)
+        if (states.layerA.opacity > 0.001) {
+          if (videoA && videoA.paused) videoA.play().catch(() => {});
+        } else if (videoA && !videoA.paused) {
+          videoA.pause();
+        }
+
+        if (states.layerB.opacity > 0.001) {
+          if (videoB && videoB.paused) videoB.play().catch(() => {});
+        } else if (videoB && !videoB.paused) {
+          videoB.pause();
+        }
+
+        if (states.layerC.opacity > 0.001) {
+          if (videoC && videoC.paused && (videoC.currentTime < (videoC.duration || 2.5) - 0.1)) {
+            videoC.play().catch(() => {});
+          }
+        } else if (videoC && !videoC.paused) {
+          videoC.pause();
+        }
+      } else {
+        // Desktop mouse scroll scrubbing
+        if (states.layerA.opacity > 0.001) {
+          controllerA.updateVideoFrame(videoA ?? null, states.layerA.targetFrame, VIDEO_MANIFEST.layerA.duration);
+        }
+        if (states.layerB.opacity > 0.001) {
+          controllerB.updateVideoFrame(videoB ?? null, states.layerB.targetFrame, VIDEO_MANIFEST.layerB.duration);
+        }
+        if (states.layerC.opacity > 0.001) {
+          controllerC.updateVideoFrame(videoC ?? null, states.layerC.targetFrame, VIDEO_MANIFEST.layerC.duration);
+        }
       }
     },
     [controllerA, controllerB, controllerC]

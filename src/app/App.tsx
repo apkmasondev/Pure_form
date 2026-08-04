@@ -10,7 +10,7 @@ export const App: React.FC = () => {
   const { viewportHeight, isMobile } = useStableViewport();
   const { targetProgressRef: scrollProgressRef } = useScrollProgress(containerRef);
   const mobileProgressRef = useRef<number>(0);
-  const startTimeRef = useRef<number>(performance.now());
+  const [reelKey, setReelKey] = useState<number>(0);
 
   const [shouldReduceMotion, setShouldReduceMotion] = useState<boolean>(false);
 
@@ -35,16 +35,16 @@ export const App: React.FC = () => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Mobile Auto-Play Cinematic Reel (16s duration, holds at final packshot 1.0)
+  // Mobile Auto-Play Cinematic Reel (16s duration, holds at final packshot 1.0, restarts on reelKey change)
   useEffect(() => {
     if (!isMobile || shouldReduceMotion) return;
 
     let rafId: number | null = null;
-    startTimeRef.current = performance.now();
+    const startTime = performance.now();
     const DURATION_MS = 16000; // 16s cinematic reel
 
     const tick = (now: number) => {
-      const elapsed = now - startTimeRef.current;
+      const elapsed = now - startTime;
       const progress = Math.min(1, Math.max(0, elapsed / DURATION_MS));
       mobileProgressRef.current = progress;
 
@@ -58,12 +58,12 @@ export const App: React.FC = () => {
     return () => {
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
-  }, [isMobile, shouldReduceMotion]);
+  }, [isMobile, shouldReduceMotion, reelKey]);
 
-  // Mobile CTA Replay Callback: Reset reel to 0.0 and play again
+  // Mobile CTA Replay Callback: Reset reel to 0.0 and launch fresh rAF animation cycle
   const handleMobileReplay = useCallback(() => {
-    startTimeRef.current = performance.now();
     mobileProgressRef.current = 0;
+    setReelKey((prev) => prev + 1);
   }, []);
 
   if (shouldReduceMotion) {

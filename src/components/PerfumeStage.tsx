@@ -72,6 +72,13 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
       const videoC = layerCRef.current?.videoElement;
 
       if (isMobile) {
+        // Reset video layer positions to 0 when restarting mobile sequence from 0.0
+        if (renderedProgress < 0.02) {
+          if (videoA && videoA.currentTime > 0.5) videoA.currentTime = 0;
+          if (videoB && videoB.currentTime > 0.5) videoB.currentTime = 0;
+          if (videoC && videoC.currentTime > 0.5) videoC.currentTime = 0;
+        }
+
         // Native hardware-accelerated video streaming on Mobile (0 seek lag)
         if (states.layerA.opacity > 0.001) {
           if (videoA && videoA.paused) videoA.play().catch(() => {});

@@ -16,12 +16,11 @@ export const App: React.FC = () => {
   useEffect(() => {
     // Check reduced motion media query
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    
-    // Check network save-data header preference
-    const connection = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
-    const isSaveData = connection?.saveData === true;
 
     const checkPreferences = () => {
+      // Re-read network preference inside handler so it's always fresh
+      const connection = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
+      const isSaveData = connection?.saveData === true;
       setShouldReduceMotion(mediaQuery.matches || isSaveData);
     };
 
@@ -35,20 +34,27 @@ export const App: React.FC = () => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Mobile Auto-Play Cinematic Reel Loop (16 seconds automated playback)
+  // Mobile Auto-Play Cinematic Reel Loop (16 seconds per cycle, repeating)
   useEffect(() => {
     if (!isMobile || shouldReduceMotion) return;
 
     let rafId: number | null = null;
-    const startTime = performance.now();
-    const DURATION_MS = 16000; // 16s cinematic reel loop
+    let startTime = performance.now();
+    const DURATION_MS = 16000; // 16s cinematic reel per cycle
 
     const tick = (now: number) => {
       const elapsed = now - startTime;
-      const progress = Math.min(1, Math.max(0, elapsed / DURATION_MS));
+      let progress = Math.min(1, Math.max(0, elapsed / DURATION_MS));
+
+      // Loop back to beginning after completing a full cycle
+      if (progress >= 1) {
+        startTime = now;
+        progress = 0;
+      }
+
       mobileProgressRef.current = progress;
 
-      if (progress < 1 && !document.hidden) {
+      if (!document.hidden) {
         rafId = requestAnimationFrame(tick);
       }
     };

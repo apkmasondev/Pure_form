@@ -40,7 +40,7 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
   const handleMetadataLoaded = useCallback(() => {
     setLoadedCount((prev) => {
       const next = prev + 1;
-      if (next >= 2) {
+      if (next >= 3) {
         setIsLoading(false);
       }
       return next;
@@ -102,14 +102,14 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
 
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1200);
+    }, 8000);
 
     return () => clearTimeout(timer);
   }, [srcA, srcB, srcC, handleMetadataLoaded]);
 
   return (
     <>
-      <ExperienceLoader isLoading={isLoading} progressPercent={(loadedCount / 2) * 100} />
+      <ExperienceLoader isLoading={isLoading} progressPercent={(loadedCount / 3) * 100} />
 
       <section className={styles.stageContainer} aria-label="APKMASON Pure Form Stage">
         {/* Luxury Ambiance Audio Toggle Button */}

@@ -27,6 +27,10 @@ export function useSmoothedProgress(
   const renderedProgressRef = useRef<number>(0);
   const rafIdRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number | null>(null);
+  const onFrameTickRef = useRef(onFrameTick);
+
+  // Keep callback ref fresh without restarting the effect
+  onFrameTickRef.current = onFrameTick;
 
   useEffect(() => {
     if (!enabled) return;
@@ -48,7 +52,7 @@ export function useSmoothedProgress(
       );
       renderedProgressRef.current = nextRendered;
 
-      onFrameTick(nextRendered, deltaSeconds);
+      onFrameTickRef.current(nextRendered, deltaSeconds);
 
       if (!document.hidden) {
         rafIdRef.current = requestAnimationFrame(tick);
@@ -77,7 +81,7 @@ export function useSmoothedProgress(
         rafIdRef.current = null;
       }
     };
-  }, [targetProgressRef, onFrameTick, enabled]);
+  }, [targetProgressRef, enabled]);
 
   return { renderedProgressRef };
 }

@@ -2,6 +2,17 @@
 
 All notable changes to the **APKMASON — PURE FORM** project will be documented in this file.
 
+## [1.2.2] - 2026-08-04
+
+### Fixed & Audited (Audyt #3)
+- **Naprawa pętli rAF w `useSmoothedProgress.ts`**: Usunięto błąd przerywania i restartowania głównej pętli `requestAnimationFrame` na skutek zjawiska "stale closure" w tablicy zależności `useEffect`. Stabilizacja za pomocą `useRef` zlikwidowała narzuty przy renderowaniu powiązanych komponentów.
+- **Naprawa błędu w `AudioToggle.tsx`**: Zabezpieczono metodę `fadeOut` przed błędem Dzielenia Przez Zero (gdy głośność wynosi 0, np. po szybkich wielokrotnych kliknięciach) oraz dodano pełne czyszczenie zasobów (`pause()`, wyzerowanie czasu) podczas odmontowywania (unmount) komponentu.
+- **Poprawa bramki ładowania (Loading Gate) w `PerfumeStage.tsx`**: Prawidłowy próg załadowanych metadanych zwiększono z `>= 2` na `>= 3` (3 warstwy wideo). Zwiększono także czas safety timeout z 1.2s do 8s, minimalizując ryzyko fałszywych stanów "Loaded" na wolnych sieciach mobilnych (np. starsze 3G).
+- **Zwiększenie użyteczności Debugowania (`useVideoFrameController.ts`)**: Puste, milczące klauzule `catch` zostały zastąpione logowaniem `console.debug` (aktywne tylko na środowiskach deweloperskich). Pozwala to łatwo diagnozować mikro-przerwania odtwarzania.
+- **Poprawki Cinematic Reel Auto-Play na Mobile (`App.tsx`)**: Pętla auto-odtwarzania (16 sekundowa) nie zatrzymuje się już po pierwszej pętli, ale gładko restartuje dla płynnego doświadczenia infinite-loop. Sprawdzanie trybu "Data Saver" zostało przepięte pod aktywny event handler, unikając uwięzienia w cieniu starych zmiennych (stale closure).
+- **Skorygowane Linki Social Media (`index.html`)**: Zmieniono tagi Open Graph (`og:image`) oraz Twitter Cards na pełne URL-e (bezwzględne), kierujące na `https://apkmasondev.github.io/.../final.webp`, gwarantując widoczność kart na portalach społecznościowych.
+- **Poprawa a11y (Dostępności Klawiaturowej)**: Zmiana anty-wzorca `outline: none` (w `StoryCopy` oraz `AudioToggle`) na semantyczne `outline: 2px solid transparent` z uaktywnianiem koloru przy użyciu klawisza Tab (pseudo-klasa `:focus-visible`).
+
 ## [1.2.1] - 2026-08-04
 
 ### Fixed & Optimized (Mobile GPU Video Decoding)

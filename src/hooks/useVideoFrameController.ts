@@ -50,7 +50,8 @@ export function useVideoFrameController() {
         lastAppliedTimeRef.current = targetTime;
         pendingTimeRef.current = null;
       } catch (err) {
-        // Safe guard against fast seeking interrupts
+        // Seeking interrupted by rapid scroll — non-critical, log for debugging
+        if (import.meta.env.DEV) console.debug('Video seek interrupted:', err);
       }
     },
     []
@@ -69,7 +70,7 @@ export function useVideoFrameController() {
         videoEl.currentTime = timeToApply;
         lastAppliedTimeRef.current = timeToApply;
       } catch (err) {
-        // Safe guard
+        if (import.meta.env.DEV) console.debug('Pending video seek failed:', err);
       }
     }
   }, []);

@@ -40,6 +40,12 @@ export const AudioToggle = () => {
 
   const fadeOut = (audio: HTMLAudioElement) => {
     clearFade();
+    if (audio.volume <= 0.01) {
+      audio.volume = 0;
+      audio.pause();
+      setIsPlaying(false);
+      return;
+    }
     const step = audio.volume / 10;
     fadeIntervalRef.current = window.setInterval(() => {
       if (audio.volume - step <= 0.01) {
@@ -67,6 +73,11 @@ export const AudioToggle = () => {
   useEffect(() => {
     return () => {
       clearFade();
+      const audio = audioRef.current;
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
     };
   }, []);
 

@@ -2,6 +2,12 @@
 
 All notable changes to the **APKMASON — PURE FORM** project will be documented in this file.
 
+## [1.2.0] - 2026-08-04
+
+### Added & Improved (Wariant A - Mobile Auto-Play Reel)
+- **Luksusowy spot automatyczny na mobile (Mobile Auto-Play Reel)**: Na telefonach (`isMobile === true`) zlikwidowano męczący 1040vh scroll runway. Strona otwiera się w idealnym kinowym `100dvh` (zero białych pasków, zero skakania paska adresu), a sekwencja wideo i typografia narracyjna odtwarzają się automatycznie od `0.0` do `1.0` w 16 sekund.
+- **Zachowanie 100% płynnego scrollowania na Desktopie**: Na komputerach stacjonarnych (`isMobile === false`) natywny scroll runway 1040vh i kontrola rolką myszy pozostały w 100% nienaruszone.
+
 ## [1.1.2] - 2026-08-04
 
 ### Fixed & Improved

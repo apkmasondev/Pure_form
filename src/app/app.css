@@ -5,6 +5,16 @@
   background-color: var(--color-bg);
 }
 
+.mobileContainer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--color-bg);
+}
+
 .reducedMotionContainer {
   position: relative;
   width: 100vw;

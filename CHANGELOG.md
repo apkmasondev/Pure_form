@@ -2,6 +2,12 @@
 
 All notable changes to the **APKMASON — PURE FORM** project will be documented in this file.
 
+## [1.3.3] - 2026-08-07
+
+### Added & Improved
+- **Ignorowanie konfiguracyjnych plików IDE (`.gitignore`)**: Dodano katalog `.claude/` do sekcji wykluczeń środowisk deweloperskich i narzędzi AI.
+- **Dodanie kompleksowego pakietu testów jednostkowych (`smoothedProgressLoop.test.tsx`)**: Dodano 4 nowe testy sprawdzające stabilność i odporność pętli wygładzania pozycji renderowania (22 testy jednostkowe łącznie).
+
 ## [1.3.2] - 2026-08-04
 
 ### Fixed & Optimized (Mobile Replay Bug Fix)

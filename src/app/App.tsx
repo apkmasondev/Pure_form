@@ -11,8 +11,13 @@ export const App: React.FC = () => {
   const { targetProgressRef: scrollProgressRef } = useScrollProgress(containerRef);
   const mobileProgressRef = useRef<number>(0);
   const [reelKey, setReelKey] = useState<number>(0);
+  const [isStageReady, setIsStageReady] = useState<boolean>(false);
 
   const [shouldReduceMotion, setShouldReduceMotion] = useState<boolean>(false);
+
+  const handleStageReady = useCallback(() => {
+    setIsStageReady(true);
+  }, []);
 
   useEffect(() => {
     // Check reduced motion media query
@@ -36,29 +41,56 @@ export const App: React.FC = () => {
   }, []);
 
   // Mobile Auto-Play Cinematic Reel (16s duration, holds at final packshot 1.0, restarts on reelKey change)
+  // Starts only once the stage reports its videos are ready, so the reel is not already
+  // running underneath the loading overlay on a slow connection.
   useEffect(() => {
-    if (!isMobile || shouldReduceMotion) return;
+    if (!isMobile || shouldReduceMotion || !isStageReady) return;
 
     let rafId: number | null = null;
-    const startTime = performance.now();
+    let lastTime: number | null = null;
     const DURATION_MS = 16000; // 16s cinematic reel
 
     const tick = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(1, Math.max(0, elapsed / DURATION_MS));
+      if (lastTime === null) lastTime = now;
+      // Cap the delta so a stalled/backgrounded frame gap cannot jump the reel forward
+      const deltaMs = Math.min(now - lastTime, 100);
+      lastTime = now;
+
+      const progress = Math.min(1, mobileProgressRef.current + deltaMs / DURATION_MS);
       mobileProgressRef.current = progress;
 
-      if (progress < 1 && !document.hidden) {
-        rafId = requestAnimationFrame(tick);
-      }
+      rafId = progress < 1 ? requestAnimationFrame(tick) : null;
     };
 
-    rafId = requestAnimationFrame(tick);
+    const startLoop = () => {
+      if (rafId !== null || mobileProgressRef.current >= 1) return;
+      lastTime = null;
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const stopLoop = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      lastTime = null;
+    };
+
+    // The reel must resume when the tab comes back — otherwise it stays frozen forever
+    const handleVisibilityChange = () => {
+      if (document.hidden) stopLoop();
+      else startLoop();
+    };
+
+    mobileProgressRef.current = 0;
+    startLoop();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      if (rafId !== null) cancelAnimationFrame(rafId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      stopLoop();
     };
-  }, [isMobile, shouldReduceMotion, reelKey]);
+  }, [isMobile, shouldReduceMotion, isStageReady, reelKey]);
 
   // Mobile CTA Replay Callback: Reset reel to 0.0 and launch fresh rAF animation cycle
   const handleMobileReplay = useCallback(() => {
@@ -90,6 +122,7 @@ export const App: React.FC = () => {
           targetProgressRef={activeProgressRef}
           isMobile={true}
           onCtaClick={handleMobileReplay}
+          onReady={handleStageReady}
         />
       </main>
     );

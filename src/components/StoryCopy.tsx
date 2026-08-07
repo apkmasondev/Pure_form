@@ -61,10 +61,12 @@ export const StoryCopy = forwardRef<StoryCopyRef, StoryCopyProps>(({ onCtaClick 
     },
   }));
 
+  // No aria-live on the overlay: the chapter counter rewrites itself continuously and
+  // would make a live region re-announce the whole overlay on every scroll tick.
   return (
-    <div className={styles.overlayContainer} aria-live="polite">
-      {/* Minimalist Luxury Progress Chapter Counter (01 / 05) */}
-      <div className={styles.progressCounterWrapper} aria-label="Progress chapter">
+    <div className={styles.overlayContainer}>
+      {/* Minimalist Luxury Progress Chapter Counter (01 / 05) — decorative */}
+      <div className={styles.progressCounterWrapper} aria-hidden="true">
         <span ref={counterCurrentRef} className={styles.counterCurrent}>
           01
         </span>

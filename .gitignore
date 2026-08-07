@@ -17,6 +17,7 @@ desktop.ini
 # IDE & Gemini / AI config
 .vscode/
 .idea/
+.claude/
 .gemini/
 .agents/
 *.swp

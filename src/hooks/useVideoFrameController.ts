@@ -4,6 +4,8 @@ import { VIDEO_FPS } from '../lib/videoManifest';
 
 export const MAX_FRAME_STEP = 2.25;
 export const MIN_FRAME_DIFFERENCE = 0.35;
+/** 2 seconds of footage — beyond this, stepping reads as fast-forward, not as scrubbing. */
+export const SNAP_FRAME_THRESHOLD = 48;
 
 /**
  * Calculates clamped frame stepping to avoid frame teleportation on rapid scroll.
@@ -18,6 +20,19 @@ export function calculateNextRenderedFrame(
   return currentRenderedFrame + step;
 }
 
+/**
+ * Whether the gap is too large to walk through. Stepping 2.25 frames per tick takes ~0.4s
+ * per 48 frames, so a gap left over from a previous pass (jump back to the top, CTA replay)
+ * would play out as a visible fast-forward before the scene catches up. Snap instead.
+ */
+export function shouldSnapToTarget(
+  currentRenderedFrame: number,
+  targetFrame: number,
+  threshold: number = SNAP_FRAME_THRESHOLD
+): boolean {
+  return Math.abs(targetFrame - currentRenderedFrame) > threshold;
+}
+
 export function useVideoFrameController() {
   const renderedFrameRef = useRef<number>(0);
   const lastAppliedTimeRef = useRef<number>(-1);
@@ -28,7 +43,9 @@ export function useVideoFrameController() {
       if (!videoEl || videoEl.readyState < 1) return;
 
       const currentRendered = renderedFrameRef.current;
-      const nextRendered = calculateNextRenderedFrame(currentRendered, targetFrame);
+      const nextRendered = shouldSnapToTarget(currentRendered, targetFrame)
+        ? targetFrame
+        : calculateNextRenderedFrame(currentRendered, targetFrame);
       renderedFrameRef.current = nextRendered;
 
       const targetTime = clamp(nextRendered / VIDEO_FPS, 0, maxDuration);
@@ -57,6 +74,38 @@ export function useVideoFrameController() {
     []
   );
 
+  /**
+   * Parks an off-screen layer directly on its target frame, with no step limiting.
+   * Without this, a hidden layer keeps the frame it held when it faded out; the next time
+   * it fades in, updateVideoFrame has to walk the whole stale gap, which the viewer sees
+   * as the clip racing to catch up. Invisible, so a hard seek costs nothing visually.
+   */
+  const syncToFrame = useCallback(
+    (videoEl: HTMLVideoElement | null, targetFrame: number, maxDuration: number) => {
+      renderedFrameRef.current = targetFrame;
+      pendingTimeRef.current = null;
+
+      if (!videoEl || videoEl.readyState < 1) return;
+
+      const targetTime = clamp(targetFrame / VIDEO_FPS, 0, maxDuration);
+      if (Math.abs(targetTime - lastAppliedTimeRef.current) < MIN_FRAME_DIFFERENCE / VIDEO_FPS) {
+        return;
+      }
+      if (videoEl.seeking) {
+        pendingTimeRef.current = targetTime;
+        return;
+      }
+
+      try {
+        videoEl.currentTime = targetTime;
+        lastAppliedTimeRef.current = targetTime;
+      } catch (err) {
+        if (import.meta.env.DEV) console.debug('Hidden layer seek failed:', err);
+      }
+    },
+    []
+  );
+
   const handleSeeked = useCallback((videoEl: HTMLVideoElement | null) => {
     if (!videoEl || pendingTimeRef.current === null) return;
 
@@ -75,5 +124,5 @@ export function useVideoFrameController() {
     }
   }, []);
 
-  return { updateVideoFrame, handleSeeked, renderedFrameRef };
+  return { updateVideoFrame, syncToFrame, handleSeeked, renderedFrameRef };
 }

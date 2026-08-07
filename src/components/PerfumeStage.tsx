@@ -13,12 +13,17 @@ interface PerfumeStageProps {
   targetProgressRef: React.RefObject<number>;
   isMobile: boolean;
   onCtaClick?: () => void;
+  onReady?: () => void;
 }
+
+const LAYER_IDS = ['a', 'b', 'c'] as const;
+type LayerId = (typeof LAYER_IDS)[number];
 
 export const PerfumeStage: React.FC<PerfumeStageProps> = ({
   targetProgressRef,
   isMobile,
   onCtaClick,
+  onReady,
 }) => {
   const layerARef = useRef<VideoLayerRef>(null);
   const layerBRef = useRef<VideoLayerRef>(null);
@@ -26,8 +31,12 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
   const storyCopyRef = useRef<StoryCopyRef>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [loadedCount, setLoadedCount] = useState<number>(0);
+  const readyLayersRef = useRef<Set<LayerId>>(new Set());
+  const [readyCount, setReadyCount] = useState<number>(0);
+  const [hasTimedOut, setHasTimedOut] = useState<boolean>(false);
+
+  const isReady = readyCount >= LAYER_IDS.length || hasTimedOut;
+  const isLoading = !isReady;
 
   const controllerA = useVideoFrameController();
   const controllerB = useVideoFrameController();
@@ -39,14 +48,12 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
 
   const finalPoster = isMobile ? POSTER_MANIFEST.finalMobile : POSTER_MANIFEST.finalDesktop;
 
-  const handleMetadataLoaded = useCallback(() => {
-    setLoadedCount((prev) => {
-      const next = prev + 1;
-      if (next >= 3) {
-        setIsLoading(false);
-      }
-      return next;
-    });
+  // Tracked per layer (not as a bare counter) so a layer that both reports readyState
+  // synchronously and later fires loadedmetadata cannot dismiss the loader early.
+  const markLayerReady = useCallback((layerId: LayerId) => {
+    if (readyLayersRef.current.has(layerId)) return;
+    readyLayersRef.current.add(layerId);
+    setReadyCount(readyLayersRef.current.size);
   }, []);
 
   const handleFrameTick = useCallback(
@@ -106,15 +113,23 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
           videoC.pause();
         }
       } else {
-        // Desktop mouse scroll scrubbing
+        // Desktop mouse scroll scrubbing. Hidden layers are parked on their target frame
+        // instead of being left untouched, so they never fade in on a frame left over from
+        // a previous pass (scroll back to the top, "Discover the scent").
         if (states.layerA.opacity > 0.001) {
           controllerA.updateVideoFrame(videoA ?? null, states.layerA.targetFrame, VIDEO_MANIFEST.layerA.duration);
+        } else {
+          controllerA.syncToFrame(videoA ?? null, states.layerA.targetFrame, VIDEO_MANIFEST.layerA.duration);
         }
         if (states.layerB.opacity > 0.001) {
           controllerB.updateVideoFrame(videoB ?? null, states.layerB.targetFrame, VIDEO_MANIFEST.layerB.duration);
+        } else {
+          controllerB.syncToFrame(videoB ?? null, states.layerB.targetFrame, VIDEO_MANIFEST.layerB.duration);
         }
         if (states.layerC.opacity > 0.001) {
           controllerC.updateVideoFrame(videoC ?? null, states.layerC.targetFrame, VIDEO_MANIFEST.layerC.duration);
+        } else {
+          controllerC.syncToFrame(videoC ?? null, states.layerC.targetFrame, VIDEO_MANIFEST.layerC.duration);
         }
       }
     },
@@ -123,32 +138,58 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
 
   useSmoothedProgress(targetProgressRef, handleFrameTick, true);
 
-  // Initial video preparation and safety timeout
+  // Initial readiness sweep and safety timeout.
+  // No load() call here: it aborts the request the browser already started and resets
+  // readyState to 0, which is exactly what the check below is trying to observe.
   useEffect(() => {
-    const videos = [
-      layerARef.current?.videoElement,
-      layerBRef.current?.videoElement,
-      layerCRef.current?.videoElement,
+    const layers: Array<[LayerId, React.RefObject<VideoLayerRef>]> = [
+      ['a', layerARef],
+      ['b', layerBRef],
+      ['c', layerCRef],
     ];
-    videos.forEach((v) => {
-      if (v) {
-        v.load();
-        if (v.readyState >= 1) {
-          handleMetadataLoaded();
-        }
+
+    // Metadata that arrived before React attached the handler never fires loadedmetadata
+    layers.forEach(([id, layerRef]) => {
+      if ((layerRef.current?.videoElement?.readyState ?? 0) >= 1) {
+        markLayerReady(id);
       }
     });
 
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 8000);
-
+    const timer = setTimeout(() => setHasTimedOut(true), 8000);
     return () => clearTimeout(timer);
-  }, [srcA, srcB, srcC, handleMetadataLoaded]);
+  }, [markLayerReady]);
+
+  // Notify the parent once, so the mobile reel starts against loaded video
+  useEffect(() => {
+    if (isReady) onReady?.();
+  }, [isReady, onReady]);
+
+  // Mobile videos play natively, so a backgrounded tab would let them drift ahead of the
+  // reel clock (which pauses). Park them while hidden; the frame tick resumes them.
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) return;
+      [
+        layerARef.current?.videoElement,
+        layerBRef.current?.videoElement,
+        layerCRef.current?.videoElement,
+      ].forEach((v) => {
+        if (v && !v.paused) v.pause();
+      });
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isMobile]);
 
   return (
     <>
-      <ExperienceLoader isLoading={isLoading} progressPercent={(loadedCount / 3) * 100} />
+      <ExperienceLoader
+        isLoading={isLoading}
+        progressPercent={(readyCount / LAYER_IDS.length) * 100}
+      />
 
       <section className={styles.stageContainer} aria-label="APKMASON Pure Form Stage">
         {/* Luxury Ambiance Audio Toggle Button */}
@@ -162,7 +203,8 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
           posterSrc={POSTER_MANIFEST.intro}
           initialOpacity={1.0}
           onSeeked={() => controllerA.handleSeeked(layerARef.current?.videoElement ?? null)}
-          onLoadedMetadata={handleMetadataLoaded}
+          onLoadedMetadata={() => markLayerReady('a')}
+          onError={() => markLayerReady('a')}
         />
 
         {/* Layer B */}
@@ -173,7 +215,8 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
           posterSrc={POSTER_MANIFEST.intro}
           initialOpacity={0.0}
           onSeeked={() => controllerB.handleSeeked(layerBRef.current?.videoElement ?? null)}
-          onLoadedMetadata={handleMetadataLoaded}
+          onLoadedMetadata={() => markLayerReady('b')}
+          onError={() => markLayerReady('b')}
         />
 
         {/* Layer C (Packshot) */}
@@ -184,7 +227,8 @@ export const PerfumeStage: React.FC<PerfumeStageProps> = ({
           posterSrc={finalPoster}
           initialOpacity={0.0}
           onSeeked={() => controllerC.handleSeeked(layerCRef.current?.videoElement ?? null)}
-          onLoadedMetadata={handleMetadataLoaded}
+          onLoadedMetadata={() => markLayerReady('c')}
+          onError={() => markLayerReady('c')}
           preload="auto"
         />
 

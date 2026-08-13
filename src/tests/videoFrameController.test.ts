@@ -1,9 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   calculateNextRenderedFrame,
-  shouldSnapToTarget,
   MAX_FRAME_STEP,
-  SNAP_FRAME_THRESHOLD,
 } from '../hooks/useVideoFrameController';
 
 describe('video frame controller stepping', () => {
@@ -13,6 +11,15 @@ describe('video frame controller stepping', () => {
 
     const nextFrame = calculateNextRenderedFrame(currentFrame, targetFrame);
     expect(nextFrame).toBe(currentFrame + MAX_FRAME_STEP);
+  });
+
+  it('keeps very large scroll jumps on the smoothed path', () => {
+    const currentFrame = 0;
+    const targetFrame = 240;
+
+    const nextFrame = calculateNextRenderedFrame(currentFrame, targetFrame);
+    expect(nextFrame).toBe(MAX_FRAME_STEP);
+    expect(nextFrame).toBeLessThan(targetFrame);
   });
 
   it('limits backwards frame step to -MAX_FRAME_STEP when scrolling backwards fast', () => {
@@ -29,19 +36,5 @@ describe('video frame controller stepping', () => {
 
     const nextFrame = calculateNextRenderedFrame(currentFrame, targetFrame);
     expect(nextFrame).toBe(targetFrame);
-  });
-});
-
-describe('stale frame snapping', () => {
-  it('steps through gaps a viewer would read as scrubbing', () => {
-    expect(shouldSnapToTarget(50, 60)).toBe(false);
-    expect(shouldSnapToTarget(100, 100 - SNAP_FRAME_THRESHOLD)).toBe(false);
-  });
-
-  it('snaps when a layer carries a stale frame from a previous pass', () => {
-    // Layer B parked at its last frame, scrolled back to the start of its own range
-    expect(shouldSnapToTarget(240, 0)).toBe(true);
-    // Layer A still visible while the viewer jumps back to the top of the runway
-    expect(shouldSnapToTarget(240, 12)).toBe(true);
   });
 });

@@ -4,8 +4,6 @@ import { VIDEO_FPS } from '../lib/videoManifest';
 
 export const MAX_FRAME_STEP = 2.25;
 export const MIN_FRAME_DIFFERENCE = 0.35;
-/** 2 seconds of footage — beyond this, stepping reads as fast-forward, not as scrubbing. */
-export const SNAP_FRAME_THRESHOLD = 48;
 
 /**
  * Calculates clamped frame stepping to avoid frame teleportation on rapid scroll.
@@ -20,19 +18,6 @@ export function calculateNextRenderedFrame(
   return currentRenderedFrame + step;
 }
 
-/**
- * Whether the gap is too large to walk through. Stepping 2.25 frames per tick takes ~0.4s
- * per 48 frames, so a gap left over from a previous pass (jump back to the top, CTA replay)
- * would play out as a visible fast-forward before the scene catches up. Snap instead.
- */
-export function shouldSnapToTarget(
-  currentRenderedFrame: number,
-  targetFrame: number,
-  threshold: number = SNAP_FRAME_THRESHOLD
-): boolean {
-  return Math.abs(targetFrame - currentRenderedFrame) > threshold;
-}
-
 export function useVideoFrameController() {
   const renderedFrameRef = useRef<number>(0);
   const lastAppliedTimeRef = useRef<number>(-1);
@@ -43,9 +28,11 @@ export function useVideoFrameController() {
       if (!videoEl || videoEl.readyState < 1) return;
 
       const currentRendered = renderedFrameRef.current;
-      const nextRendered = shouldSnapToTarget(currentRendered, targetFrame)
-        ? targetFrame
-        : calculateNextRenderedFrame(currentRendered, targetFrame);
+      // Keep visible footage on the bounded path even after a large wheel/trackpad jump.
+      // A previous stale-frame safeguard snapped gaps over 48 frames directly to the
+      // target, producing visible 2–3 second discontinuities and bypassing this controller's
+      // smoothing contract. Hidden layers are already parked safely by syncToFrame below.
+      const nextRendered = calculateNextRenderedFrame(currentRendered, targetFrame);
       renderedFrameRef.current = nextRendered;
 
       const targetTime = clamp(nextRendered / VIDEO_FPS, 0, maxDuration);

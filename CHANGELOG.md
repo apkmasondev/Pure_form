@@ -2,6 +2,15 @@
 
 All notable changes to the **APKMASON — PURE FORM** project will be documented in this file.
 
+## [1.4.0] - 2026-08-26
+
+### Rebuilt & Optimized (Single Master Video)
+- **Jeden spójny master**: Zastąpiono trzy równoległe warstwy wideo jednym 19-sekundowym montażem z przenikaniem zapisanym bezpośrednio w materiale.
+- **Lżejsze assety**: Zmieniono GOP1 na GOP 6 oraz zastosowano CRF 20 (desktop) i CRF 22 (mobile), redukując łączny rozmiar wideo z około 82 MB do 28,6 MB.
+- **Jeden dekoder**: Desktop i mobile utrzymują tylko jeden aktywny element `<video>`, eliminując wyścigi seeków, błyski warstw i równoległe obciążenie dekoderów.
+- **Płynność 60/120 Hz**: Limit doganiania klatek jest liczony na sekundę, a nie na tick `requestAnimationFrame`, dzięki czemu zachowanie jest takie samo na ekranach 60 Hz i 120 Hz.
+- **Poprawny replay mobile**: Reset filmu odbywa się raz na zmianę klucza replay, zamiast wielokrotnego seekowania do zera w początkowym zakresie progressu.
+
 ## [1.3.3] - 2026-08-07
 
 ### Added & Improved

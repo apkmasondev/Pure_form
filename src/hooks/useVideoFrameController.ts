@@ -2,7 +2,9 @@ import { useRef, useCallback } from 'react';
 import { clamp } from '../lib/clamp';
 import { VIDEO_FPS } from '../lib/videoManifest';
 
-export const MAX_FRAME_STEP = 2.25;
+/** Matches the original 2.25-frame step at 60 Hz without doubling at 120 Hz. */
+export const MAX_FRAME_RATE = 135;
+export const MAX_FRAME_DELTA_SECONDS = 0.1;
 export const MIN_FRAME_DIFFERENCE = 0.35;
 
 /**
@@ -11,8 +13,11 @@ export const MIN_FRAME_DIFFERENCE = 0.35;
 export function calculateNextRenderedFrame(
   currentRenderedFrame: number,
   targetFrame: number,
-  maxStep: number = MAX_FRAME_STEP
+  deltaSeconds: number,
+  maxFrameRate: number = MAX_FRAME_RATE
 ): number {
+  const safeDeltaSeconds = clamp(deltaSeconds, 0, MAX_FRAME_DELTA_SECONDS);
+  const maxStep = maxFrameRate * safeDeltaSeconds;
   const diff = targetFrame - currentRenderedFrame;
   const step = clamp(diff, -maxStep, maxStep);
   return currentRenderedFrame + step;
@@ -24,15 +29,20 @@ export function useVideoFrameController() {
   const pendingTimeRef = useRef<number | null>(null);
 
   const updateVideoFrame = useCallback(
-    (videoEl: HTMLVideoElement | null, targetFrame: number, maxDuration: number) => {
+    (
+      videoEl: HTMLVideoElement | null,
+      targetFrame: number,
+      maxDuration: number,
+      deltaSeconds: number
+    ) => {
       if (!videoEl || videoEl.readyState < 1) return;
 
       const currentRendered = renderedFrameRef.current;
-      // Keep visible footage on the bounded path even after a large wheel/trackpad jump.
-      // A previous stale-frame safeguard snapped gaps over 48 frames directly to the
-      // target, producing visible 2–3 second discontinuities and bypassing this controller's
-      // smoothing contract. Hidden layers are already parked safely by syncToFrame below.
-      const nextRendered = calculateNextRenderedFrame(currentRendered, targetFrame);
+      const nextRendered = calculateNextRenderedFrame(
+        currentRendered,
+        targetFrame,
+        deltaSeconds
+      );
       renderedFrameRef.current = nextRendered;
 
       const targetTime = clamp(nextRendered / VIDEO_FPS, 0, maxDuration);
@@ -61,38 +71,6 @@ export function useVideoFrameController() {
     []
   );
 
-  /**
-   * Parks an off-screen layer directly on its target frame, with no step limiting.
-   * Without this, a hidden layer keeps the frame it held when it faded out; the next time
-   * it fades in, updateVideoFrame has to walk the whole stale gap, which the viewer sees
-   * as the clip racing to catch up. Invisible, so a hard seek costs nothing visually.
-   */
-  const syncToFrame = useCallback(
-    (videoEl: HTMLVideoElement | null, targetFrame: number, maxDuration: number) => {
-      renderedFrameRef.current = targetFrame;
-      pendingTimeRef.current = null;
-
-      if (!videoEl || videoEl.readyState < 1) return;
-
-      const targetTime = clamp(targetFrame / VIDEO_FPS, 0, maxDuration);
-      if (Math.abs(targetTime - lastAppliedTimeRef.current) < MIN_FRAME_DIFFERENCE / VIDEO_FPS) {
-        return;
-      }
-      if (videoEl.seeking) {
-        pendingTimeRef.current = targetTime;
-        return;
-      }
-
-      try {
-        videoEl.currentTime = targetTime;
-        lastAppliedTimeRef.current = targetTime;
-      } catch (err) {
-        if (import.meta.env.DEV) console.debug('Hidden layer seek failed:', err);
-      }
-    },
-    []
-  );
-
   const handleSeeked = useCallback((videoEl: HTMLVideoElement | null) => {
     if (!videoEl || pendingTimeRef.current === null) return;
 
@@ -111,5 +89,5 @@ export function useVideoFrameController() {
     }
   }, []);
 
-  return { updateVideoFrame, syncToFrame, handleSeeked, renderedFrameRef };
+  return { updateVideoFrame, handleSeeked, renderedFrameRef };
 }

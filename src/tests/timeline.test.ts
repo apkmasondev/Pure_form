@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  calculateVideoStates,
   calculateCopyState,
   calculateIntroHeaderState,
   calculateFinalStageState,
@@ -46,32 +45,6 @@ describe('timeline calculations', () => {
     const solid = calculateFinalStageState(1.00);
     expect(solid.opacity).toBe(1.0);
     expect(solid.translateY).toBe(0);
-  });
-
-  it('calculates layer opacities correctly across progress ranges', () => {
-    const start = calculateVideoStates(0.00);
-    expect(start.layerA.opacity).toBe(1.0);
-    expect(start.layerB.opacity).toBe(0.0);
-    expect(start.layerC.opacity).toBe(0.0);
-
-    const crossfadeAB = calculateVideoStates(0.45);
-    expect(crossfadeAB.layerA.opacity).toBeCloseTo(0.5, 2);
-    expect(crossfadeAB.layerB.opacity).toBeCloseTo(0.5, 2);
-    expect(crossfadeAB.layerC.opacity).toBe(0.0);
-
-    const midB = calculateVideoStates(0.70);
-    expect(midB.layerA.opacity).toBe(0.0);
-    expect(midB.layerB.opacity).toBe(1.0);
-    expect(midB.layerC.opacity).toBe(0.0);
-
-    const crossfadeBC = calculateVideoStates(0.875);
-    expect(crossfadeBC.layerB.opacity).toBeCloseTo(0.5, 2);
-    expect(crossfadeBC.layerC.opacity).toBeCloseTo(0.5, 2);
-
-    const end = calculateVideoStates(1.00);
-    expect(end.layerA.opacity).toBe(0.0);
-    expect(end.layerB.opacity).toBe(0.0);
-    expect(end.layerC.opacity).toBe(1.0);
   });
 
   it('calculates story copy entrance and exit opacities', () => {

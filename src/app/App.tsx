@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useStableViewport } from '../hooks/useStableViewport';
 import { useScrollProgress } from '../hooks/useScrollProgress';
 import { PerfumeStage } from '../components/PerfumeStage';
-import { POSTER_MANIFEST } from '../lib/videoManifest';
+import { MASTER_VIDEO, POSTER_MANIFEST } from '../lib/videoManifest';
 import './app.css';
 
 export const App: React.FC = () => {
@@ -40,15 +40,15 @@ export const App: React.FC = () => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Mobile Auto-Play Cinematic Reel (16s duration, holds at final packshot 1.0, restarts on reelKey change)
-  // Starts only once the stage reports its videos are ready, so the reel is not already
+  // Mobile auto-play follows the exact master duration and holds on its final frame.
+  // It starts only once the stage reports the video ready, so the reel is not already
   // running underneath the loading overlay on a slow connection.
   useEffect(() => {
     if (!isMobile || shouldReduceMotion || !isStageReady) return;
 
     let rafId: number | null = null;
     let lastTime: number | null = null;
-    const DURATION_MS = 16000; // 16s cinematic reel
+    const durationMs = MASTER_VIDEO.duration * 1000;
 
     const tick = (now: number) => {
       if (lastTime === null) lastTime = now;
@@ -56,7 +56,7 @@ export const App: React.FC = () => {
       const deltaMs = Math.min(now - lastTime, 100);
       lastTime = now;
 
-      const progress = Math.min(1, mobileProgressRef.current + deltaMs / DURATION_MS);
+      const progress = Math.min(1, mobileProgressRef.current + deltaMs / durationMs);
       mobileProgressRef.current = progress;
 
       rafId = progress < 1 ? requestAnimationFrame(tick) : null;
@@ -121,6 +121,7 @@ export const App: React.FC = () => {
         <PerfumeStage
           targetProgressRef={activeProgressRef}
           isMobile={true}
+          replayKey={reelKey}
           onCtaClick={handleMobileReplay}
           onReady={handleStageReady}
         />

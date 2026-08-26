@@ -1,17 +1,4 @@
 import { mapRange } from './mapRange';
-import { VIDEO_MANIFEST } from './videoManifest';
-
-export interface LayerState {
-  opacity: number;
-  targetTime: number;
-  targetFrame: number;
-}
-
-export interface VideoTimelineState {
-  layerA: LayerState;
-  layerB: LayerState;
-  layerC: LayerState;
-}
 
 export interface StoryCopyItem {
   id: string;
@@ -118,49 +105,6 @@ export function calculateFinalStageState(progress: number): { opacity: number; t
   const opacity = mapRange(progress, 0.88, 0.94, 0.0, 1.0);
   const translateY = mapRange(progress, 0.88, 0.94, 20, 0);
   return { opacity, translateY };
-}
-
-/**
- * Calculates video target opacities, times, and frame indices for all 3 layers based on progress [0.0 - 1.0].
- */
-export function calculateVideoStates(progress: number): VideoTimelineState {
-  // Layer A
-  let opacityA = 1.0;
-  if (progress > 0.40 && progress < 0.50) {
-    opacityA = mapRange(progress, 0.40, 0.50, 1.0, 0.0);
-  } else if (progress >= 0.50) {
-    opacityA = 0.0;
-  }
-  const targetTimeA = mapRange(progress, 0.00, 0.46, 0.0, VIDEO_MANIFEST.layerA.duration);
-  const targetFrameA = targetTimeA * VIDEO_MANIFEST.layerA.fps;
-
-  // Layer B
-  let opacityB = 0.0;
-  if (progress >= 0.40 && progress < 0.50) {
-    opacityB = mapRange(progress, 0.40, 0.50, 0.0, 1.0);
-  } else if (progress >= 0.50 && progress <= 0.84) {
-    opacityB = 1.0;
-  } else if (progress > 0.84 && progress < 0.91) {
-    opacityB = mapRange(progress, 0.84, 0.91, 1.0, 0.0);
-  }
-  const targetTimeB = mapRange(progress, 0.42, 0.88, 0.0, VIDEO_MANIFEST.layerB.duration);
-  const targetFrameB = targetTimeB * VIDEO_MANIFEST.layerB.fps;
-
-  // Layer C
-  let opacityC = 0.0;
-  if (progress > 0.84 && progress < 0.91) {
-    opacityC = mapRange(progress, 0.84, 0.91, 0.0, 1.0);
-  } else if (progress >= 0.91) {
-    opacityC = 1.0;
-  }
-  const targetTimeC = mapRange(progress, 0.84, 1.00, 0.0, VIDEO_MANIFEST.layerC.duration);
-  const targetFrameC = targetTimeC * VIDEO_MANIFEST.layerC.fps;
-
-  return {
-    layerA: { opacity: opacityA, targetTime: targetTimeA, targetFrame: targetFrameA },
-    layerB: { opacity: opacityB, targetTime: targetTimeB, targetFrame: targetFrameB },
-    layerC: { opacity: opacityC, targetTime: targetTimeC, targetFrame: targetFrameC },
-  };
 }
 
 /**

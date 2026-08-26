@@ -1,40 +1,42 @@
 import { describe, it, expect } from 'vitest';
 import {
   calculateNextRenderedFrame,
-  MAX_FRAME_STEP,
+  MAX_FRAME_DELTA_SECONDS,
+  MAX_FRAME_RATE,
 } from '../hooks/useVideoFrameController';
 
 describe('video frame controller stepping', () => {
-  it('limits frame step to MAX_FRAME_STEP when target is far ahead', () => {
-    const currentFrame = 10;
-    const targetFrame = 100; // Large step from rapid scroll
+  it('preserves the original 2.25-frame step at 60 Hz', () => {
+    const nextFrame = calculateNextRenderedFrame(10, 100, 1 / 60);
+    expect(nextFrame).toBeCloseTo(12.25, 8);
+  });
 
-    const nextFrame = calculateNextRenderedFrame(currentFrame, targetFrame);
-    expect(nextFrame).toBe(currentFrame + MAX_FRAME_STEP);
+  it('uses the same frame velocity at 60 Hz and 120 Hz', () => {
+    const at60Hz = calculateNextRenderedFrame(0, 100, 1 / 60);
+    const first120Hz = calculateNextRenderedFrame(0, 100, 1 / 120);
+    const second120Hz = calculateNextRenderedFrame(first120Hz, 100, 1 / 120);
+
+    expect(second120Hz).toBeCloseTo(at60Hz, 8);
   });
 
   it('keeps very large scroll jumps on the smoothed path', () => {
-    const currentFrame = 0;
-    const targetFrame = 240;
-
-    const nextFrame = calculateNextRenderedFrame(currentFrame, targetFrame);
-    expect(nextFrame).toBe(MAX_FRAME_STEP);
-    expect(nextFrame).toBeLessThan(targetFrame);
+    const nextFrame = calculateNextRenderedFrame(0, 456, 1 / 60);
+    expect(nextFrame).toBeCloseTo(MAX_FRAME_RATE / 60, 8);
+    expect(nextFrame).toBeLessThan(456);
   });
 
-  it('limits backwards frame step to -MAX_FRAME_STEP when scrolling backwards fast', () => {
-    const currentFrame = 100;
-    const targetFrame = 10;
-
-    const nextFrame = calculateNextRenderedFrame(currentFrame, targetFrame);
-    expect(nextFrame).toBe(currentFrame - MAX_FRAME_STEP);
+  it('limits backwards movement using the same velocity', () => {
+    const nextFrame = calculateNextRenderedFrame(100, 10, 1 / 60);
+    expect(nextFrame).toBeCloseTo(100 - MAX_FRAME_RATE / 60, 8);
   });
 
-  it('moves directly to target frame if difference is smaller than MAX_FRAME_STEP', () => {
-    const currentFrame = 50;
-    const targetFrame = 51.5;
+  it('caps long frame gaps so a stalled tab cannot teleport the video', () => {
+    const nextFrame = calculateNextRenderedFrame(0, 456, 2);
+    expect(nextFrame).toBe(MAX_FRAME_RATE * MAX_FRAME_DELTA_SECONDS);
+  });
 
-    const nextFrame = calculateNextRenderedFrame(currentFrame, targetFrame);
-    expect(nextFrame).toBe(targetFrame);
+  it('moves directly to a nearby target and ignores negative deltas', () => {
+    expect(calculateNextRenderedFrame(50, 51.5, 1 / 60)).toBe(51.5);
+    expect(calculateNextRenderedFrame(50, 100, -1)).toBe(50);
   });
 });
